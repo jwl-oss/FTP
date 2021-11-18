@@ -1,6 +1,7 @@
-package com.example.ftp;
+package com.example.javalib;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,8 +10,17 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class FtpServer {
+    private ArrayList<String[]> userInfo = new ArrayList<>();
+
+    public void init(){
+        // TODO:读取用户信息存入userInfo
+        File file = new File("./FTP_APP/userInfo.txt");
+
+    }
+
     public static void main(String[] args) throws IOException {
         //1.创建一个服务器端Socket，即ServerSocket，指定绑定的端口，并监听此端口
         ServerSocket serverSocket = new ServerSocket(21);

@@ -7,4 +7,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "FTP"
-include ':app'
+include ':FtpClient'
+include ':FtpServer'
