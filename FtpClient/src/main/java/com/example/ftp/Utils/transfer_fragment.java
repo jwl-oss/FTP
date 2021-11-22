@@ -1,4 +1,4 @@
-package com.example.ftp;
+package com.example.ftp.Utils;
 
 import android.os.Bundle;
 
@@ -15,7 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
+import com.example.ftp.R;
 
 
 public class transfer_fragment extends Fragment {

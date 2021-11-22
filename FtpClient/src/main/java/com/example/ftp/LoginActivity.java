@@ -14,8 +14,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.ftp.Utils.FtpUtil;
+
 import java.io.IOException;
-import java.net.Socket;
 
 public class LoginActivity extends AppCompatActivity{
     private String address,password,username,DTP;

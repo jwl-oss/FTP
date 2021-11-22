@@ -1,11 +1,13 @@
-package com.example.ftp;
+package com.example.ftp.Utils;
+
+import com.example.ftp.FtpClient;
 
 import java.io.IOException;
 
 public class FtpUtil {
     private static FtpClient client;
     private static String address;
-    private static int port = 21;
+    private static int port;
     private static String username;
     private static String password;
     private static String DTP_mode = "PASV";
@@ -29,7 +31,7 @@ public class FtpUtil {
     }
 
     public static boolean Connect(String userInfo){
-        flag = false;
+        flag = true;
         new Thread(new Runnable() {
             @Override
             public void run(){
@@ -40,13 +42,13 @@ public class FtpUtil {
                     switch(userInfo) {
                         case "anonymous":
                             if (client.openConnect(address, port)) {
-                                client.ACCT(userInfo);
+                                //client.ACCT(userInfo);
                                 flag = true;
                             }
                             break;
                         case "user":
                             if(client.openConnect(address,port)){
-                                client.ACCT(userInfo);
+                                //client.ACCT(userInfo);
                                 if(client.login(username,password)){
                                     flag = true;
                                 }

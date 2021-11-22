@@ -16,14 +16,11 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ftp.Utils.FtpUtil;
+import com.example.ftp.Utils.fileAdapter;
+import com.example.ftp.Utils.transfer_fragment;
 import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;

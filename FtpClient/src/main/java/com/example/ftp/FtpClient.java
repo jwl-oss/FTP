@@ -31,6 +31,8 @@ public class FtpClient {
     private String transfer_mode = "PASV";// 默认
     private int data_port = 4444;//默认
     private int deep = 0;
+    private String replyCode;
+    private String replyMessage;
     // 根目录
     private String root = "./";
 
@@ -44,18 +46,15 @@ public class FtpClient {
             // 当客户端与服务器建立连接后，服务器会返回 220 的响应码
             OutputStream outputStream = control_sock.getOutputStream();
             control_pw = new PrintWriter(new OutputStreamWriter(outputStream));
-            // 发送命令
-            sendCommand("CONN\n",control_pw);
-
             // 建立好连接后，从socket中获取输入流
             InputStream inputStream = control_sock.getInputStream();
             control_br = new BufferedReader(new InputStreamReader(inputStream));
             // TODO:校验服务端返回的响应码
-            if(receive(control_br).equals("OK")) {
+            receive(control_br);
+            //  "OK."
+            if(replyCode.equals("200")) {
                 isConnected = true;
                 flag = true;
-                sendCommand("successfully \n",control_pw);
-                receive(control_br);
             }
         }catch (IOException e){
             flag = false;
@@ -71,11 +70,13 @@ public class FtpClient {
         boolean flag = false;
         // 当客户端发送用户名和密码，服务器验证通过后，会返回 230 的响应码
         sendCommand("USER "+ username +"\n",control_pw);
-        if(receive(control_br).equals("OK")){
+        receive(control_br);
+        // "User name okay, need password."
+        if(replyCode.equals("331")){
             sendCommand("PASS " + password +"\n",control_pw);
-            if(receive(control_br).equals("OK")){
-                sendCommand("successfully \n",control_pw);
-                receive(control_br);
+            receive(control_br);
+            // "User logged in."
+            if(replyCode.equals("230")){
                 flag = true;
             }
         }
@@ -126,7 +127,8 @@ public class FtpClient {
         String command = "RSTR " + remotePath + "\n";
         sendCommand(command,control_pw);
         // 此时服务器返回文件名是目录（Dir）还是文件（File）
-        String type = receive(control_br);
+        receive(control_br);
+        String type = replyMessage;
         // 当返回为目录时，查看当前目录内容
         if(type.equals("Dir")){
             // 创建当前目录
@@ -154,7 +156,9 @@ public class FtpClient {
     private boolean data_pasv() throws IOException {
         boolean flag = false;
         sendCommand("PASV\n",control_pw);
-        if(receive(control_br).equals("OK")){
+        receive(control_br);
+        // "Entering Passive Mode."
+        if(replyCode.equals("OK")){
             // 进行data_socket连接
             data_sock = new Socket(ipAddress,data_port);
             data_os = data_sock.getOutputStream();
@@ -174,14 +178,16 @@ public class FtpClient {
         InetAddress localIP = control_sock.getLocalAddress();
         String command = "PORT " + data_port + " " + localIP + "\n";
         sendCommand(command,control_pw);
-        if(receive(control_br).equals("OK")){
+        receive(control_br);
+        if(replyCode.equals("OK")){
             data_is = data_sock.getInputStream();
-            if(receive(control_br).equals("OK")) {
-                System.out.println("data_connect successfully");
-                data_os = data_sock.getOutputStream();
-                data_is = data_sock.getInputStream();
-                flag = true;
-            }
+//            receive(control_br);
+//            if(receive(control_br).equals("OK")) {
+//                System.out.println("data_connect successfully");
+//                data_os = data_sock.getOutputStream();
+//                data_is = data_sock.getInputStream();
+//                flag = true;
+//            }
         }
         return  flag;
     }
@@ -192,10 +198,11 @@ public class FtpClient {
         pw.flush();
     }
 
-    public String receive(BufferedReader br) throws IOException {
+    public void receive(BufferedReader br) throws IOException {
         // 读取返回值
-        String response = br.readLine();
-        return response;
+        String[] response = br.readLine().split(" ");
+        replyCode = response[0];
+        replyMessage = response[1];
     }
 
     // 接受数据
@@ -215,7 +222,8 @@ public class FtpClient {
         String command = "CWD " + remotePath + "\n";
         sendCommand(command,control_pw);
         // 目录名或者文件名用空格分开
-        String[] dirInfo = receive(control_br).split(" ");
+        receive(control_br);
+        String[] dirInfo = replyMessage.split(" ");
         return dirInfo;
     }
 
@@ -252,7 +260,8 @@ public class FtpClient {
     public void LIST() throws IOException {
         String command = "LIST " + "\n";
         sendCommand(command,control_pw);
-        String structure = receive(control_br);
+        receive(control_br);
+        // TODO
     }
 
     public void ACCT(String accountInfo) throws IOException {
