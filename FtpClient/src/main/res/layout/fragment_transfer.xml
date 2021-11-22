@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".transfer_fragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/currentMode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:layout_gravity="center"/>
+
+        <RadioGroup
+            android:id="@+id/mode_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/PASV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="20dp"
+                android:text="PASV"
+                android:checked="true"></RadioButton>
+
+            <RadioButton
+                android:id="@+id/PORT"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="20dp"
+                android:text="PORT"></RadioButton>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="若选择PORT，请输入端口号和IP地址"
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="20dp"></TextView>
+
+        <EditText
+            android:id="@+id/data_port"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="请输入port           "
+            android:layout_marginLeft="50dp"
+            android:layout_marginTop="20dp"></EditText>
+
+        <RadioGroup
+            android:id="@+id/fileType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/ASCII"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="20dp"
+                android:text="ASCII"
+                android:checked="true"></RadioButton>
+
+            <RadioButton
+                android:id="@+id/EBCDIC"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="20dp"
+                android:text="EBDIC"></RadioButton>
+            <RadioButton
+                android:id="@+id/PICTURE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="20dp"
+                android:text="PICTURE"></RadioButton>
+        </RadioGroup>
+
+        <RadioGroup
+            android:id="@+id/structure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/file_structure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="50dp"
+                android:layout_marginTop="20dp"
+                android:text="File"
+                android:checked="true"></RadioButton>
+
+            <RadioButton
+                android:id="@+id/record_structure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="20dp"
+                android:text="Record"></RadioButton>
+            <RadioButton
+                android:id="@+id/page_structure"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="20dp"
+                android:text="Page"></RadioButton>
+        </RadioGroup>
+
+        <Button
+            android:id="@+id/confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:text="提交"
+            android:layout_gravity="center">
+        </Button>
+
+    </LinearLayout>
+
+</FrameLayout>
