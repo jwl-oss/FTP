@@ -17,6 +17,13 @@
         android:layout_marginLeft="10dp"
         android:text="setting"
         ></Button>
+        <Button
+            android:id="@+id/test"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="test"
+            ></Button>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/Local_files"

@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
 public class FtpClient {
     private Socket control_sock = null;
@@ -29,16 +30,16 @@ public class FtpClient {
     private boolean isConnected = false;
     private boolean data_connected = false;
     private String transfer_mode = "PASV";// 默认
-    private int data_port = 4444;//默认
+    private int data_port;
     private int deep = 0;
     private String replyCode;
     private String replyMessage;
+    private boolean flag;
     // 根目录
     private String root = "./";
 
-
     public boolean openConnect(String host,int port)throws IOException{
-        boolean flag = false;
+        boolean flag = true;
         ipAddress = host;
         try {
             //创建客户端 命令Socket，指定服务器地址和端口
@@ -66,20 +67,25 @@ public class FtpClient {
         return isConnected;
     }
 
-    public boolean login(String username,String password) throws IOException{
-        boolean flag = false;
-        // 当客户端发送用户名和密码，服务器验证通过后，会返回 230 的响应码
+    public boolean user(String username) throws IOException {
+        flag = false;
         sendCommand("USER "+ username +"\n",control_pw);
+        System.out.println(username);
         receive(control_br);
         // "User name okay, need password."
         if(replyCode.equals("331")){
-            sendCommand("PASS " + password +"\n",control_pw);
-            receive(control_br);
-            // "User logged in."
-            if(replyCode.equals("230")){
-                flag = true;
-            }
+            flag = true;
         }
+        return flag;
+    }
+
+    public boolean password(String password)throws IOException{
+        flag = false;
+        sendCommand("PASS " + password +"\n",control_pw);
+        System.out.println(password);
+        receive(control_br);
+        if(replyCode.equals("230"))
+            flag = true;
         return flag;
     }
 
@@ -88,12 +94,14 @@ public class FtpClient {
         if(!data_connected){
             data_connect();
         }
-        String command = "STOR " + remotePath +"\n";
-        sendCommand(command,control_pw);
+        deep ++;
         // 判断上传的是文件还是文件夹
         File file = new File(localPath);
         // 文件直接上传
         if(file.exists()&&file.isFile()){
+            String command = "STOR " + remotePath +"\n";
+            sendCommand(command,control_pw);
+            receive(control_br);
             BufferedReader br = new BufferedReader(new FileReader(file));
             String data = "";
             String str;
@@ -103,12 +111,22 @@ public class FtpClient {
             data_os.write(data.getBytes(StandardCharsets.UTF_8));
             br.close();
         }else if(file.isDirectory()){
-            // TODO
+            // 服务器创建目录
+            MKD(remotePath);
+            // 切换服务器目录
+            CWD(remotePath);
             File[] folder = file.listFiles();
-
+            for(int i =0;i<folder.length;i++){
+                File file1 = folder[i];
+                remotePath = remotePath + File.separator + file1.getName();
+                localPath = localPath + File.separator + file1.getName();
+                upload(remotePath,localPath);
+            }
         }
-        receive(control_br);
-        data_disconnect();
+        deep --;
+        if(deep == 0) {
+            data_disconnect();
+        }
     }
 
     // 下载 RSTR
@@ -133,7 +151,7 @@ public class FtpClient {
         if(type.equals("Dir")){
             // 创建当前目录
             if(file.mkdirs()) {
-                String[] currentDir = CWD(remotePath);
+                String[] currentDir = LIST(remotePath);
                 // 遍历目录下的文件
                 for (int i = 0; i < currentDir.length; i++) {
                     String path = remotePath + File.pathSeparator + currentDir[i];
@@ -153,12 +171,15 @@ public class FtpClient {
         }
     }
 
-    private boolean data_pasv() throws IOException {
+    public boolean data_pasv() throws IOException {
         boolean flag = false;
         sendCommand("PASV\n",control_pw);
         receive(control_br);
         // "Entering Passive Mode."
-        if(replyCode.equals("OK")){
+        // h1,h2,h3,h4,p1,p2  port = p1*256 + p2;
+        if(replyCode.equals("277")){
+            String[] Args = replyMessage.split(",");
+            data_port = Integer.parseInt(Args[4]) * 256 + Integer.parseInt(Args[5]);
             // 进行data_socket连接
             data_sock = new Socket(ipAddress,data_port);
             data_os = data_sock.getOutputStream();
@@ -168,9 +189,10 @@ public class FtpClient {
         return flag;
     }
 
-    private boolean data_port() throws IOException{
+    public boolean data_port() throws IOException{
         boolean flag = false;
         // 客户端使用自己的端口
+        data_port = 1024 + new Random().nextInt(65535-1024);
         ServerSocket serverSocket = new ServerSocket(data_port);
         // 等待服务器接入
         data_sock = serverSocket.accept();
@@ -203,6 +225,7 @@ public class FtpClient {
         String[] response = br.readLine().split(" ");
         replyCode = response[0];
         replyMessage = response[1];
+        System.out.println(replyMessage);
     }
 
     // 接受数据
@@ -217,14 +240,12 @@ public class FtpClient {
         bw.flush();
     }
 
-    // 查询目录下的文件
-    public String[] CWD(String remotePath) throws IOException {
+    // 进入目录
+    public void CWD(String remotePath) throws IOException {
         String command = "CWD " + remotePath + "\n";
         sendCommand(command,control_pw);
         // 目录名或者文件名用空格分开
         receive(control_br);
-        String[] dirInfo = replyMessage.split(" ");
-        return dirInfo;
     }
 
     public void MKD(String remotePath) throws IOException {
@@ -251,23 +272,24 @@ public class FtpClient {
         receive(control_br);
     }
 
+    public void STRU(String mode) throws IOException {
+        String command = "STRU " + mode +"\n";
+        sendCommand(command,control_pw);
+        receive(control_br);
+    }
+
     public void deleteFile(String remotePath) throws IOException {
         String command = "DELE " + remotePath +"\n";
         sendCommand(command,control_pw);
         receive(control_br);
     }
 
-    public void LIST() throws IOException {
-        String command = "LIST " + "\n";
+    public String[] LIST(String path) throws IOException {
+        String command = "LIST " + path +"\n";
         sendCommand(command,control_pw);
         receive(control_br);
-        // TODO
-    }
-
-    public void ACCT(String accountInfo) throws IOException {
-        String command = "ACCT " + accountInfo +"\n";
-        sendCommand(command,control_pw);
-        receive(control_br);
+        String[] dirInfo = replyMessage.split(" ");
+        return dirInfo;
     }
 
     // 关闭数据连接

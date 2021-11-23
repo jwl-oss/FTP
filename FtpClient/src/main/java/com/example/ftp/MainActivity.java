@@ -81,17 +81,17 @@ public class MainActivity extends AppCompatActivity {
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
                         break;
                     case R.id.LocalDirectory:
-                        initData();
-                        Local_File();
                         if(tf.isAdded())
                             getSupportFragmentManager().beginTransaction().remove(tf).commit();
+                        initData();
+                        Local_File();
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
                         break;
                     case R.id.disconnect:
                         try {
                             FtpUtil.disconnect();
                             Toast.makeText(MainActivity.this,"断开连接",Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
+                        } catch (IOException | InterruptedException e) {
                             e.printStackTrace();
                         }
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
@@ -100,10 +100,19 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        Button test = findViewById(R.id.test);
+        test.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File file = new File("/storage/emulated/0/FTPClient/12");
+                Toast.makeText(MainActivity.this,"OK",Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initData(){
-        File file = Environment.getExternalStorageDirectory();
+        File file = new File("/storage/emulated/0/FTPClient");
         if(file == null){
             Toast.makeText(this,"没有文件",Toast.LENGTH_SHORT).show();
             return;

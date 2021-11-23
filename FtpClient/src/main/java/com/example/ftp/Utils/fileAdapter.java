@@ -18,12 +18,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ftp.R;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
     private List<File> fileList;
-    private File currentFile = Environment.getExternalStorageDirectory();
+    private File currentFile = new File("/storage/emulated/0/FTPClient");
     private View view;
 
     public File getCurrentFile(){
@@ -83,7 +84,11 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
                     public void onClick(DialogInterface dialog, int which) {
                         String remotePath = input.getText().toString();
                         if(remotePath!=null&&!remotePath.isEmpty()){
-                            FtpUtil.upload(remotePath,path);
+                            try {
+                                FtpUtil.upload(remotePath,path);
+                            } catch (IOException | InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }else{
                             Toast.makeText(v.getContext(),"路径为空",Toast.LENGTH_SHORT).show();
                         }
@@ -113,7 +118,8 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
     }
 
     public void lastFile(){
-        if(!currentFile.equals(Environment.getExternalStorageDirectory())){
+        File file = new File("/storage/emulated/0/FTPClient");
+        if(!currentFile.equals(file)){
             currentFile = currentFile.getParentFile();
             fileList.clear();
             fileList.addAll(Arrays.asList(currentFile.listFiles()));
@@ -122,5 +128,4 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
             Toast.makeText(view.getContext(),"已是根目录",Toast.LENGTH_SHORT).show();
         }
     }
-
 }
