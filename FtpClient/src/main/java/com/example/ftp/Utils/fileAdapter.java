@@ -24,7 +24,7 @@ import java.util.List;
 
 public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
     private List<File> fileList;
-    private File currentFile = new File("/storage/emulated/0/FTPClient");
+    private File currentFile = new File("/storage/emulated/0/FTP");
     private View view;
 
     public File getCurrentFile(){
@@ -118,7 +118,7 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
     }
 
     public void lastFile(){
-        File file = new File("/storage/emulated/0/FTPClient");
+        File file = new File("/storage/emulated/0/FTP");
         if(!currentFile.equals(file)){
             currentFile = currentFile.getParentFile();
             fileList.clear();

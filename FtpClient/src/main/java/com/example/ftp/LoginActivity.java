@@ -20,7 +20,7 @@ import com.example.ftp.Utils.FtpUtil;
 import java.io.IOException;
 
 public class LoginActivity extends AppCompatActivity{
-    private String address,password,username,DTP;
+    private String address,password,username;
     private int port = 1111;
     private EditText add_edit,port_edit,pass_edit,user_edit;
     private TextView message_edit;
@@ -29,7 +29,6 @@ public class LoginActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         getPermission();
 
         add_edit = findViewById(R.id.address);

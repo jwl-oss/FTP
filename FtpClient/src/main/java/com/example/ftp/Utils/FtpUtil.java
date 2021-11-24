@@ -129,7 +129,7 @@ public class FtpUtil {
         return client.getTransfer_mode();
     }
 
-    public static void setType(String type){
+    public static void setType(String type) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -168,10 +168,28 @@ public class FtpUtil {
         }).start();
     }
 
-
-
     public static void setTM(String mode,int port) {
-        client.setTransferArgs(mode,port);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                client.setTransferArgs(mode,port);
+//                try {
+//                    switch (mode) {
+//                        case "PASV":
+//                            client.data_pasv();
+//                            System.out.println(mode);
+//                            break;
+//                        case "PORT":
+//                            client.data_port();
+//                            System.out.println(mode);
+//                            break;
+//
+//                    }
+//                }catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+            }
+        }).start();
     }
 
     public static String[] list(String remotePath) throws IOException, InterruptedException {

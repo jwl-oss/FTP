@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
+import java.util.StringTokenizer;
 
 public class FtpClient {
     private Socket control_sock = null;
@@ -44,6 +45,7 @@ public class FtpClient {
         try {
             //创建客户端 命令Socket，指定服务器地址和端口
             control_sock = new Socket(host, port);
+            System.out.println("连接成功");
             // 当客户端与服务器建立连接后，服务器会返回 220 的响应码
             OutputStream outputStream = control_sock.getOutputStream();
             control_pw = new PrintWriter(new OutputStreamWriter(outputStream));
@@ -56,6 +58,7 @@ public class FtpClient {
             if(replyCode.equals("200")) {
                 isConnected = true;
                 flag = true;
+                System.out.println("校验成功");
             }
         }catch (IOException e){
             flag = false;
@@ -70,10 +73,11 @@ public class FtpClient {
     public boolean user(String username) throws IOException {
         flag = false;
         sendCommand("USER "+ username +"\n",control_pw);
-        System.out.println(username);
+        System.out.println("user"+username);
         receive(control_br);
         // "User name okay, need password."
         if(replyCode.equals("331")){
+            System.out.println("校验成功");
             flag = true;
         }
         return flag;
@@ -82,10 +86,12 @@ public class FtpClient {
     public boolean password(String password)throws IOException{
         flag = false;
         sendCommand("PASS " + password +"\n",control_pw);
-        System.out.println(password);
+        System.out.println("password"+password);
         receive(control_br);
-        if(replyCode.equals("230"))
+        if(replyCode.equals("230")) {
+            System.out.println("校验成功");
             flag = true;
+        }
         return flag;
     }
 
@@ -177,13 +183,14 @@ public class FtpClient {
         receive(control_br);
         // "Entering Passive Mode."
         // h1,h2,h3,h4,p1,p2  port = p1*256 + p2;
-        if(replyCode.equals("277")){
+        if(replyCode.equals("227")){
             String[] Args = replyMessage.split(",");
             data_port = Integer.parseInt(Args[4]) * 256 + Integer.parseInt(Args[5]);
             // 进行data_socket连接
             data_sock = new Socket(ipAddress,data_port);
             data_os = data_sock.getOutputStream();
             data_is = data_sock.getInputStream();
+            System.out.println("passive successfully");
             flag = true;
         };
         return flag;
@@ -192,24 +199,35 @@ public class FtpClient {
     public boolean data_port() throws IOException{
         boolean flag = false;
         // 客户端使用自己的端口
-        data_port = 1024 + new Random().nextInt(65535-1024);
+        if(data_port<1024)
+            data_port = 1024 + new Random().nextInt(65535-1024);
+
         ServerSocket serverSocket = new ServerSocket(data_port);
-        // 等待服务器接入
-        data_sock = serverSocket.accept();
         // 获取客户端ip地址
-        InetAddress localIP = control_sock.getLocalAddress();
-        String command = "PORT " + data_port + " " + localIP + "\n";
+        String localIP = control_sock.getInetAddress().getHostAddress();
+        StringTokenizer st = new StringTokenizer(localIP, ".");
+        String[] parmArray = new String[st.countTokens()];
+        int i = 0;
+        while (st.hasMoreTokens()) {
+            parmArray[i] = st.nextToken();
+            i++;
+        }
+        int p1=data_port / 256;
+        int p2=data_port % 256;
+        System.out.println(data_port);
+        String command = "PORT " + parmArray[0] + "," + parmArray[1] + "," + parmArray[2] + "," + parmArray[3] + "," + p1 + "," + p2 + "\n";
+        System.out.println(command);
         sendCommand(command,control_pw);
+        System.out.println("send");
         receive(control_br);
-        if(replyCode.equals("OK")){
+        if(replyCode.equals("200")){
+            data_sock = serverSocket.accept();
+            System.out.println("data_connect successfully");
             data_is = data_sock.getInputStream();
-//            receive(control_br);
-//            if(receive(control_br).equals("OK")) {
-//                System.out.println("data_connect successfully");
-//                data_os = data_sock.getOutputStream();
-//                data_is = data_sock.getInputStream();
-//                flag = true;
-//            }
+            data_os = data_sock.getOutputStream();
+            flag = true;
+        }else{
+            System.out.println("failed");
         }
         return  flag;
     }
@@ -225,7 +243,7 @@ public class FtpClient {
         String[] response = br.readLine().split(" ");
         replyCode = response[0];
         replyMessage = response[1];
-        System.out.println(replyMessage);
+        System.out.println(replyCode+" "+replyMessage);
     }
 
     // 接受数据
@@ -261,20 +279,23 @@ public class FtpClient {
     }
 
     public void TYPE(String type) throws IOException {
-        String command = "RMD " + type +"\n";
+        String command = "TYPE " + type +"\n";
         sendCommand(command,control_pw);
+        System.out.println(command);
         receive(control_br);
     }
 
     public void MODE(String mode) throws IOException {
         String command = "MODE " + mode +"\n";
         sendCommand(command,control_pw);
+        System.out.println(command);
         receive(control_br);
     }
 
     public void STRU(String mode) throws IOException {
         String command = "STRU " + mode +"\n";
         sendCommand(command,control_pw);
+        System.out.println(command);
         receive(control_br);
     }
 

@@ -32,12 +32,12 @@
     </androidx.recyclerview.widget.RecyclerView>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/page"
+
+    <FrameLayout
+        android:id = "@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-    </LinearLayout>
+        android:layout_height="match_parent"></FrameLayout>
+
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/setting_menu"
@@ -45,7 +45,5 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/nav_menu" />
-
-
 
 </androidx.drawerlayout.widget.DrawerLayout>

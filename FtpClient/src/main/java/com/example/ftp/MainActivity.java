@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                         if(recyclerView!=null){
                             recyclerView.setVisibility(View.GONE);
                         }
-                        getSupportFragmentManager().beginTransaction().add(R.id.page,tf).commit();
+                        getSupportFragmentManager().beginTransaction().add(R.id.container,tf).commit();
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
                         break;
                     case R.id.FtpServerDirectory:
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData(){
-        File file = new File("/storage/emulated/0/FTPClient");
+        File file = new File("/storage/emulated/0/FTP");
         if(file == null){
             Toast.makeText(this,"没有文件",Toast.LENGTH_SHORT).show();
             return;
