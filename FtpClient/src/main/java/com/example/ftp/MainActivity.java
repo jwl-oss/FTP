@@ -16,9 +16,11 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.QuickContactBadge;
 import android.widget.Toast;
 
 import com.example.ftp.Utils.FtpUtil;
+import com.example.ftp.Utils.ServerFileAdapter;
 import com.example.ftp.Utils.fileAdapter;
 import com.example.ftp.Utils.transfer_fragment;
 import com.google.android.material.navigation.NavigationView;
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private List<File> fileList;
     private DrawerLayout mDrawerLayout;
     private fileAdapter adapter;
+    private ServerFileAdapter serverFileAdapter;
     private transfer_fragment tf;
     private String currentMode = "PASV";
 
@@ -74,8 +77,13 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.FtpServerDirectory:
                         if(tf.isAdded())
                             getSupportFragmentManager().beginTransaction().remove(tf).commit();
-                        if(recyclerView!=null){
-                            recyclerView.setVisibility(View.GONE);
+                        try {
+                            String[] files = FtpUtil.list("/storage/emulated/0/FTP/FtpServer");
+                            Local_Server_File(files);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                         Toast.makeText(MainActivity.this,"服务器文件加载成功",Toast.LENGTH_SHORT).show();
                         mDrawerLayout.closeDrawer(Gravity.LEFT);
@@ -102,13 +110,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button test = findViewById(R.id.test);
-        test.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File file = new File("/storage/emulated/0/FTPClient/12");
-                Toast.makeText(MainActivity.this,"OK",Toast.LENGTH_SHORT).show();
-            }
-        });
+            test.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    File file = new File("/storage/emulated/0/FTP/FtpServer/test");
+                    try {
+                        if(!file.exists())
+                            file.createNewFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    //FtpUtil.upload("/storage/emulated/0/Android/FTP/FtpServer","/storage/emulated/0/FTP/Ftpclient/small9980-9999/small9999");
+                }
+            });
     }
 
     private void initData(){
@@ -127,6 +141,14 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
         adapter = new fileAdapter(fileList);
         recyclerView.setAdapter(adapter);
+    }
+
+    private void Local_Server_File(String[] files){
+        recyclerView = (RecyclerView)findViewById(R.id.Local_files);
+        LinearLayoutManager layoutManager=new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+        serverFileAdapter = new ServerFileAdapter(files);
+        recyclerView.setAdapter(serverFileAdapter);
     }
 
     private void getPermissions(){

@@ -129,8 +129,8 @@ public class transfer_fragment extends Fragment {
                     if(rb.isChecked()){
                         mode = rb.getText().toString();
                     }
-                }FtpUtil.setMode(mode);
-
+                }
+                FtpUtil.setMode(mode);
                 System.out.println("change4 OK");
             }
         });

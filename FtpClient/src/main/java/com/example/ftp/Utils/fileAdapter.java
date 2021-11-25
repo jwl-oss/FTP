@@ -27,9 +27,6 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
     private File currentFile = new File("/storage/emulated/0/FTP");
     private View view;
 
-    public File getCurrentFile(){
-        return currentFile;
-    }
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         ImageView fileImage;
@@ -72,6 +69,7 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
                 File file = fileList.get(holder.getAdapterPosition());
                 String path = file.getAbsolutePath();
                 //String fileName = file.getName();
+                System.out.println(path);
                 Toast.makeText(view.getContext(),path,Toast.LENGTH_SHORT).show();
                 //产生弹框，获取上传到服务器的路径
                 EditText input = new EditText(view.getContext());
@@ -83,12 +81,11 @@ public class fileAdapter extends RecyclerView.Adapter<fileAdapter.ViewHolder> {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String remotePath = input.getText().toString();
+                        String localPath = file.getAbsolutePath();
                         if(remotePath!=null&&!remotePath.isEmpty()){
-                            try {
-                                FtpUtil.upload(remotePath,path);
-                            } catch (IOException | InterruptedException e) {
-                                e.printStackTrace();
-                            }
+                            System.out.println(remotePath);
+                            System.out.println(localPath);
+                            FtpUtil.upload(remotePath,localPath);
                         }else{
                             Toast.makeText(v.getContext(),"路径为空",Toast.LENGTH_SHORT).show();
                         }

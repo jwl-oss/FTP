@@ -105,18 +105,16 @@ public class FtpClient {
         File file = new File(localPath);
         // 文件直接上传
         if(file.exists()&&file.isFile()){
+            System.out.println("传输文件 " + file.getName() );
             String command = "STOR " + remotePath +"\n";
             sendCommand(command,control_pw);
             receive(control_br);
             BufferedReader br = new BufferedReader(new FileReader(file));
-            String data = "";
-            String str;
-            while((str = br.readLine()) != null){
-                data = data + "\n" + str;
-            }
-            data_os.write(data.getBytes(StandardCharsets.UTF_8));
+            data_send(br);
             br.close();
         }else if(file.isDirectory()){
+            System.out.println("传输文件夹 " + file.getName() );
+
             // 服务器创建目录
             MKD(remotePath);
             // 切换服务器目录
@@ -147,14 +145,18 @@ public class FtpClient {
         // 创建文件
         localPath = localPath + File.pathSeparator + filename;
         File file = new File(localPath);
-        // 发送命令
-        String command = "RSTR " + remotePath + "\n";
-        sendCommand(command,control_pw);
-        // 此时服务器返回文件名是目录（Dir）还是文件（File）
-        receive(control_br);
-        String type = replyMessage;
-        // 当返回为目录时，查看当前目录内容
-        if(type.equals("Dir")){
+
+        if(isFile(remotePath)){
+            // 发送命令
+            String command = "RSTR " + remotePath + "\n";
+            sendCommand(command,control_pw);
+            receive(control_br);
+            file.createNewFile();
+            FileWriter fw = new FileWriter(file.getName(),true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            data_receive(bw);
+            bw.close();
+        }else{
             // 创建当前目录
             if(file.mkdirs()) {
                 String[] currentDir = LIST(remotePath);
@@ -164,11 +166,6 @@ public class FtpClient {
                     download(path, currentDir[i], localPath);
                 }
             }
-        }else if(type.equals("File")){
-            FileWriter fw = new FileWriter(file.getName(),true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            data_receive(data_is,bw);
-            bw.close();
         }
         deep --;
         if(deep == 0){
@@ -247,17 +244,30 @@ public class FtpClient {
     }
 
     // 接受数据
-    public void data_receive(InputStream ins,BufferedWriter bw) throws IOException{
+    public void data_receive(BufferedWriter bw) throws IOException{
         byte[] bytes = new byte[1024];
         int len;
         String data;
-        while((len = ins.read(bytes)) != -1){
+        while((len = data_is.read(bytes)) != -1){
             data = new String(bytes,"UTF-8");
             bw.write(data);
         }
         bw.flush();
     }
 
+    // 发送数据
+    public void data_send(BufferedReader br) throws IOException {
+        String data = "";
+        String str;
+        while((str = br.readLine()) != null){
+            data = data + "\n" + str;
+        }
+        data = data +"\n" +"end";
+        // System.out.println(data);
+        data_os.write(data.getBytes(StandardCharsets.UTF_8));
+        data_os.flush();
+        System.out.println("send file OK");
+    }
     // 进入目录
     public void CWD(String remotePath) throws IOException {
         String command = "CWD " + remotePath + "\n";
@@ -305,6 +315,7 @@ public class FtpClient {
         receive(control_br);
     }
 
+    // 如果是个file，返回File,如果是个目录，返回其内容（包括空目录）
     public String[] LIST(String path) throws IOException {
         String command = "LIST " + path +"\n";
         sendCommand(command,control_pw);
@@ -312,6 +323,15 @@ public class FtpClient {
         String[] dirInfo = replyMessage.split(" ");
         return dirInfo;
     }
+
+     public boolean isFile(String path) throws IOException {
+        LIST(path);
+        if(replyCode.equals("300")){
+            return true;
+        }
+        return false;
+     }
+
 
     // 关闭数据连接
     public void data_disconnect()throws IOException{
@@ -322,7 +342,7 @@ public class FtpClient {
     }
 
     private void data_connect()throws IOException{
-        if(data_connected = true)
+        if(data_connected)
             data_disconnect();
         switch (transfer_mode){
             case "PASV":
@@ -333,6 +353,7 @@ public class FtpClient {
                 break;
         }
         data_connected = true;
+        System.out.println("data connect successfully");
     }
 
     public String getTransfer_mode(){

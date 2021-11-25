@@ -87,42 +87,37 @@ public class FtpUtil {
         return flag;
     }
 
-    public static boolean upload(String remotePath,String localPath) throws IOException, InterruptedException {
+    public static void upload(String remotePath,String localPath) {
         flag = false;
-        Runnable run = new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    System.out.println("调用成功");
                     client.upload(remotePath, localPath);
+//                    client.STOR(remotePath,localPath);
+                    System.out.println("upload successfully");
                     flag = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        };
-        Thread subThread = new Thread(run);
-        subThread.start();
-        subThread.join(1000);
-        return flag;
+        }).start();
     }
 
-    public static boolean download(String remotePath,String localPath,String filename) throws IOException, InterruptedException {
+    public static void download(String remotePath,String localPath,String filename) throws IOException, InterruptedException {
         flag = false;
-        Runnable run = new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     client.download(remotePath, localPath, filename);
-                    flag = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                flag = true;
             }
-        };
-        Thread subThread = new Thread(run);
-        subThread.start();
-        subThread.join(1000);
-        return flag;
+        }).start();
     }
 
     public static String getFM(){
@@ -173,6 +168,7 @@ public class FtpUtil {
             @Override
             public void run() {
                 client.setTransferArgs(mode,port);
+                System.out.println("change "+ mode);
 //                try {
 //                    switch (mode) {
 //                        case "PASV":
@@ -215,9 +211,7 @@ public class FtpUtil {
             @Override
             public void run() {
                 try {
-                    files = client.LIST(remotePath);
-                    if(files.length !=1)
-                        flag = true;
+                    flag = !client.isFile(remotePath);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
